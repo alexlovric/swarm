@@ -1,0 +1,40 @@
+[build-system]
+requires = ["maturin>=0.14,<2.0.0"]
+build-backend = "maturin"
+
+[project]
+name = "swarm"
+version = "0.1.1"
+readme = "../README.md"
+license = "MIT"
+authors = [
+    { name = "Aleksander Lovric", email = "alexlovric@gmail.com" }
+]
+description = "Fast blackbox optimisation tool written in rust, wrapped in python"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = [
+    "optimisation",
+    "blackbox",
+    "particle-swarm",
+    "nsga",
+    "nsga2",
+    "scientific-computing",
+]
+
+
+[tool.maturin]
+manifest-path = "Cargo.toml"
+profile = "release"

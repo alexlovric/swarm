@@ -1,0 +1,30 @@
+[package]
+name = "swarm"
+description = "Fast blackbox optimisation tool."
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "../README.md"
+documentation = "https://docs.rs/swarm"
+keywords = ["optimisation", "blackbox", "particle-swarm", "nsga"]
+categories = ["mathematics", "algorithms"]
+
+[lib]
+name = "swarm"
+path = "src/lib.rs"
+
+[dependencies]
+rand = "0.8.5"
+rayon = { version = "1.10.0", optional = true }
+
+[features]
+default = []
+parallel = ["dep:rayon"]
+
+[dev-dependencies]
+approx = "0.5"
+
+[lints.clippy]
+too_many_arguments = "allow"

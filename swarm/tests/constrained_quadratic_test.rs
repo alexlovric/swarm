@@ -1,6 +1,6 @@
 use swarm::{
     nsga::{PolyMutationParams, SbxParams},
-    particle_swarm::PsoParams,
+    pso::PsoParams,
     ConstraintHandler, Optimiser, Variable,
 };
 

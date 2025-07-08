@@ -3,13 +3,13 @@ use std::time::Instant;
 pub mod error;
 pub mod initialisation;
 pub mod nsga;
-pub mod particle_swarm;
+pub mod pso;
 
 use crate::{
     error::Result,
     initialisation::Initialisation,
     nsga::{nsga, PolyMutationParams, SbxParams},
-    particle_swarm::{particle_swarm, PsoParams},
+    pso::{particle_swarm, PsoParams},
 };
 
 /// Represents a variable with floating point bounds.
@@ -147,7 +147,7 @@ impl Optimiser {
                 params,
                 constraint_handler,
                 seed,
-            } => particle_swarm(
+            } => pso(
                 func,
                 vars,
                 max_iter,

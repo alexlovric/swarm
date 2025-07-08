@@ -1,17 +1,26 @@
-name: Publish swarm crate
+name: Publish Swarm Crate
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Perform a dry run without actual publish"
+        type: boolean
+        default: false
+
   release:
     types: [published]
   push:
     tags:
-      - "swarm-v*"
+      - "swarm-v*" # e.g., swarm-v0.1.2
 
 jobs:
   publish:
     name: Publish swarm to crates.io
     runs-on: ubuntu-latest
+
+    env:
+      CARGO_REGISTRIES_CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
 
     steps:
       - name: 📦 Checkout repository
@@ -23,7 +32,9 @@ jobs:
           toolchain: stable
 
       - name: 🔍 Dry run (preview contents)
-        run: cargo package --list
+        if: github.event.inputs.dry_run == 'true' || (github.event_name != 'release' && github.event_name != 'push')
+        run: cargo package --list -p swarm
 
-      - name: 🚀 Publish to crates.io
-        run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
+      - name: 🚀 Publish swarm to crates.io
+        if: (github.event_name == 'release' || github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'true')
+        run: cargo publish -p swarm

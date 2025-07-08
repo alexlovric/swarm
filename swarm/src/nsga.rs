@@ -11,7 +11,7 @@ use crate::{
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct SbxParams {
     // Simulated Binary Crossover
     pub prob: f64,
@@ -26,7 +26,7 @@ impl Default for SbxParams {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct PolyMutationParams {
     // Polynomial Mutation
     pub prob: f64,
@@ -41,7 +41,7 @@ impl Default for PolyMutationParams {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 struct Individual {
     x: Vec<f64>,
     f: Vec<f64>,

@@ -1,32 +1,13 @@
-[package]
-name = "swarm"
+[workspace]
+resolver = "2"
+members = [
+    "swarm",
+    "swarm_py",
+]
+
+[workspace.package]
 version = "0.1.2"
-authors = ["Aleksander Lovric <alexlovric@gmail.com>"]
-description = "Fast blackbox optimisation tool."
 edition = "2021"
+authors = ["Aleksander Lovric <alexlovric@gmail.com>"]
 license = "MIT"
-repository = "https://github.com/alexlovric/swarm"
-documentation = "https://docs.rs/swarm"
-readme = "README.md"
-keywords = ["optimisation", "blackbox", "particle-swarm", "nsga"]
-categories = ["mathematics", "algorithms"]
-
-[lib]
-name = "swarm"
-path = "src/lib.rs"
-test = true
-doctest = false
-
-[dependencies]
-rand = "0.8.5"
-rayon = { version = "1.10.0", optional = true }
-
-[features]
-default = []
-parallel = ["dep:rayon"]
-
-[dev-dependencies]
-approx = "0.5"
-
-[lints.clippy]
-too_many_arguments = "allow"
+repository = "https://github.com/alexlovric/swarm" 

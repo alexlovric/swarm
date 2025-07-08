@@ -34,7 +34,7 @@ This is very useful for computationally expensive objective functions.
 Problem: Minimise f(x, y) = (x² + y - 11)² + (x + y² - 7)²
 
 ```rust
-use swarm::{error::Result, particle_swarm::PsoParams, Optimiser, Variable};
+use swarm::{error::Result, pso::PsoParams, Optimiser, Variable};
 
 // Define the function
 fn himmelblau_problem(x: &[f64]) -> (Vec<f64>, Option<Vec<f64>>) {
@@ -59,7 +59,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 3. Solve the problem
     let max_iter = 200;
     let result = optimiser.solve(&mut himmelblau_problem, &vars, max_iter)?;
-
+    // you can also call the particle_swarm function directly
+    
     // 4. Get the best solution found
     let best = &result.solutions[0];
     println!("Min at x = {:.4?}, f(x) = {:.4}", best.x, best.f[0]);
@@ -105,7 +106,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 3. Solve the problem
     let result = optimiser.solve(&mut binh_and_korn_problem, &vars, 250)?;
-
+    // Can also call the nsga function directly
+    
     // 4. Get the Pareto front
     println!("Found {} solutions on the Pareto front.", result.solutions.len());
     
@@ -115,7 +117,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 After running the Binh and Korn example and plotting the solutions, you should see a Pareto front similar to the one shown below.
 
-<img src="examples/binh_korn_pareto.png" width="99%"/>
+<img src="assets/binh_korn_pareto.png" width="99%"/>
 
 ## License
 MIT License - See [LICENSE](LICENSE) for details.

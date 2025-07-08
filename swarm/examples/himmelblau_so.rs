@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use swarm::{
     error::{Result, SwarmError},
-    particle_swarm::PsoParams,
+    pso::PsoParams,
     Optimiser, Variable,
 };
 

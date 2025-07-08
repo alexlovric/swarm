@@ -1,0 +1,18 @@
+[package]
+name = "swarm_py"
+description = "Python bindings for the Swarm Rust library."
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "../README.md"
+
+[lib]
+name = "swarm_py"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = {version="0.25.1", features = ["abi3-py38"]}
+
+swarm = { path = "../swarm" }

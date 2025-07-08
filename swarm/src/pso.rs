@@ -10,7 +10,7 @@ use crate::{
 use rayon::prelude::*;
 
 /// A helper struct to hold the parameters for the PSO algorithm.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct PsoParams {
     pub inertia: f64,
     pub cognitive_coeff: f64,
