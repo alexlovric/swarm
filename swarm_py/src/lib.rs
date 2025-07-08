@@ -153,6 +153,64 @@ impl PyOptimiser {
             execution_time: swarm_result.execution_time,
         })
     }
+
+
+    /// Solves an optimisation problem in parallel using the configured algorithm.
+    fn solve_parallel(
+        &self,
+        py: Python,
+        func: PyObject,
+        vars: Vec<PyVariable>,
+        max_iter: usize,
+    ) -> PyResult<PyOptimiserResult> {
+        // --- Type Conversion: Python -> Rust ---
+        let rust_vars: Vec<Variable> = vars.into_iter().map(|v| v.0).collect();
+
+        // --- Create a thread-safe Rust closure that calls the Python function ---
+        // This closure is `Send` and `Sync`, so it can be safely moved across threads.
+        // It captures the Python function object (`func`).
+        let objective_closure = |x: &[f64]| -> PyResult<(Vec<f64>, Option<Vec<f64>>)> {
+            // On each call, we acquire the GIL to safely interact with Python objects.
+            Python::with_gil(|py| {
+                let args = (x,);
+                let result = func.call1(py, args)?;
+                result.extract(py)
+            })
+        };
+
+        // --- Release the GIL and call the core parallel Rust optimiser ---
+        // `py.allow_threads` drops the GIL, allowing the enclosed block to run
+        // on a rayon thread pool without being blocked by Python.
+        let result = py.allow_threads(|| {
+            // This now calls a parallel version of your optimiser's solve method.
+            // This method MUST be implemented with Rayon internally.
+            self.0.solve_parallel(&objective_closure, &rust_vars, max_iter)
+        });
+
+        // --- Handle potential errors from the Rust optimiser ---
+        // This includes both optimisation errors and errors from the Python callback.
+        let swarm_result = match result {
+            Ok(res) => res,
+            Err(e) => return Err(PyValueError::new_err(e.to_string())),
+        };
+
+        // --- Type Conversion: Rust -> Python ---
+        let py_solutions = swarm_result
+            .solutions
+            .into_iter()
+            .map(|sol| PySolution {
+                x: sol.x,
+                f: sol.f,
+                g: sol.g,
+            })
+            .collect();
+
+        Ok(PyOptimiserResult {
+            solutions: py_solutions,
+            n_iterations: swarm_result.n_iterations,
+            execution_time: swarm_result.execution_time,
+        })
+    }
 }
 
 /// A Python module implementing bindings for the Swarm optimisation library.
