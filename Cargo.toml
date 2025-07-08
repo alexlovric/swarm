@@ -8,7 +8,7 @@ license = "MIT"
 repository = "https://github.com/alexlovric/swarm"
 documentation = "https://docs.rs/swarm"
 readme = "README.md"
-keywords = ["optimisation", "blackbox", "particle swarm", "nsga"]
+keywords = ["optimisation", "blackbox", "particle-swarm", "nsga"]
 categories = ["mathematics", "algorithms"]
 
 [lib]
