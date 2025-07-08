@@ -16,14 +16,14 @@ To use Swarm in your project, add it as a dependency in your Cargo.toml:
 
 ```toml
 [dependencies]
-swarm = "0.1.1"
+swarm = "0.1.2"
 ```
 
 To enable the high-performance parallel execution mode, add it with the parallel feature flag.
 
 ```toml
 [dependencies]
-swarm = { version = "0.1.1", features = ["parallel"] }
+swarm = { version = "0.1.2", features = ["parallel"] }
 ```
 
 This is very useful for computationally expensive objective functions.
