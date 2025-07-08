@@ -36,7 +36,7 @@ Problem: Minimise f(x, y) = (x² + y - 11)² + (x + y² - 7)²
 ```rust
 use swarm::{error::Result, particle_swarm::PsoParams, Optimiser, Variable};
 
-// Define the Himmelblau function
+// Define the function
 fn himmelblau_problem(x: &[f64]) -> (Vec<f64>, Option<Vec<f64>>) {
     let x1 = x[0];
     let x2 = x[1];
@@ -61,7 +61,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let result = optimiser.solve(&mut himmelblau_problem, &vars, max_iter)?;
 
     // 4. Get the best solution found
-    let best = result.best_solution().unwrap();
+    let best = &result.solutions[0];
     println!("Min at x = {:.4?}, f(x) = {:.4}", best.x, best.f[0]);
     Ok(())
 }
@@ -75,11 +75,8 @@ Problem: Minimise two objectives, f1(x, y) and f2(x, y), subject to two constrai
 ```rust
 use swarm::{Optimiser, Variable, SbxParams, PolyMutationParams};
 
-// Define the Binh and Korn problem
+// Define the problem
 fn binh_and_korn_problem(x: &[f64]) -> (Vec<f64>, Option<Vec<f64>>) {
-    if x.len() != 2 {
-        return (vec![f64::MAX, f64::MAX], None);
-    }
     let x1 = x[0];
     let x2 = x[1];
 

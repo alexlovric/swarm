@@ -1,6 +1,6 @@
 [package]
 name = "swarm"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Aleksander Lovric <alexlovric@gmail.com>"]
 description = "Fast blackbox optimisation tool."
 edition = "2021"
