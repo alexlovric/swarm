@@ -73,7 +73,7 @@ This example solves the constrained Binh and Korn problem. NSGA-II is ideal for 
 Problem: Minimise two objectives, f1(x, y) and f2(x, y), subject to two constraints.
 
 ```rust
-use swarm::{Optimiser, Variable, SbxParams, PolyMutationParams, Initialisation};
+use swarm::{Optimiser, Variable, SbxParams, PolyMutationParams};
 
 // Define the Binh and Korn problem
 fn binh_and_korn_problem(x: &[f64]) -> (Vec<f64>, Option<Vec<f64>>) {

@@ -1,0 +1,29 @@
+name: Publish swarm crate
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+  push:
+    tags:
+      - "swarm-v*"
+
+jobs:
+  publish:
+    name: Publish swarm to crates.io
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: 🔍 Dry run (preview contents)
+        run: cargo package --list
+
+      - name: 🚀 Publish to crates.io
+        run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
