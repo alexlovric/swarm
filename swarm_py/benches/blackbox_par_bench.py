@@ -1,5 +1,5 @@
 import pytest
-import swarm
+import swarm_py as swarm
 import numpy as np
 import time
 

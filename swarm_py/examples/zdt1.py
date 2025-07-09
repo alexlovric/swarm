@@ -1,4 +1,4 @@
-import swarm
+import swarm_py as swarm
 import time
 import numpy as np
 import matplotlib.pyplot as plt

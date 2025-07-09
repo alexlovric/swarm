@@ -3,7 +3,7 @@ requires = ["maturin>=0.14,<2.0.0"]
 build-backend = "maturin"
 
 [project]
-name = "swarm"
+name = "swarm_py"
 version = "0.1.1"
 readme = "../README.md"
 license = "MIT"
@@ -38,5 +38,5 @@ keywords = [
 
 
 [tool.maturin]
-module-name = "swarm._swarm"
+module-name = "swarm_py._swarm"
 profile = "release"

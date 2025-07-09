@@ -1,4 +1,4 @@
-import swarm
+import swarm_py as swarm
 import numpy as np
 
 # --- Pymoo imports ---
