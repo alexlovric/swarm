@@ -20,7 +20,7 @@ rand = "0.8.5"
 rayon = { version = "1.10.0", optional = true }
 
 [features]
-default = []
+default = ["parallel"]
 parallel = ["dep:rayon"]
 
 [dev-dependencies]

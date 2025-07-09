@@ -1,5 +1,5 @@
 use swarm::{
-    nsga::{PolyMutationParams, SbxParams},
+    nsga::{PmParams, SbxParams},
     pso::PsoParams,
     ConstraintHandler, Optimiser, Variable,
 };
@@ -32,7 +32,7 @@ fn run_constrained_quadratic_test(optimiser: &Optimiser) {
     let max_iter = 100;
 
     let result = optimiser.solve(&mut func, &vars, max_iter);
-    assert!(result.is_ok(), "Optimizer returned an error");
+    assert!(result.is_ok(), "Optimiser returned an error");
     let optimiser_result = &result.unwrap().solutions[0];
 
     let actual_x = optimiser_result.x[0];
@@ -68,8 +68,8 @@ fn run_constrained_quadratic_test(optimiser: &Optimiser) {
 }
 
 #[test]
-fn test_particleswarm_on_constrained_quadratic_problem() {
-    let optimiser = Optimiser::ParticleSwarm {
+fn test_pso_on_constrained_quadratic_problem() {
+    let optimiser = Optimiser::Pso {
         n_particles: 50,
         params: PsoParams::default(),
         constraint_handler: Some(ConstraintHandler::Penalty {
@@ -84,8 +84,8 @@ fn test_particleswarm_on_constrained_quadratic_problem() {
 fn test_nsga_on_constrained_quadratic_problem() {
     let optimiser = Optimiser::Nsga {
         pop_size: 50,
-        crossover_params: SbxParams::default(),
-        mutation_params: PolyMutationParams::default(),
+        crossover: SbxParams::default(),
+        mutation: PmParams::default(),
         seed: Some(1),
     };
     run_constrained_quadratic_test(&optimiser);

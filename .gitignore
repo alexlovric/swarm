@@ -3,5 +3,10 @@ target
 **/*.csv
 **/*__pycache__
 **/*.pyc
-**/*.py
 **/temp
+**/*.todo
+**/*.so
+
+# Benchmark artifacts
+**/.benchmarks
+**/benchmark_data.json

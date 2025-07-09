@@ -53,8 +53,7 @@ struct Particle {
 ///
 /// # Returns
 /// A `Result` containing the `OptimiserResult` on success, or an error string on failure.
-#[cfg(not(feature = "parallel"))]
-pub fn particle_swarm<F>(
+pub fn pso<F>(
     func: &mut F,
     vars: &[Variable],
     max_iter: usize,
@@ -178,7 +177,7 @@ where
 /// The main Particle Swarm Optimisation function (PARALLEL VERSION).
 /// This version is compiled ONLY when the "parallel" feature is enabled.
 #[cfg(feature = "parallel")]
-pub fn particle_swarm<F>(
+pub fn pso_par<F>(
     func: &F, // Note: F is now Fn, not FnMut
     vars: &[Variable],
     n_particles: usize,

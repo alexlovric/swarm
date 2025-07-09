@@ -1,6 +1,7 @@
 use swarm::{
-    nsga::{PolyMutationParams, SbxParams},
-    Optimiser, Variable,
+    error::Result,
+    nsga::{PmParams, SbxParams},
+    Optimiser, OptimiserResult, Variable,
 };
 
 /// Defines the ZDT1 benchmark problem, a standard for multi-objective optimisation.
@@ -33,14 +34,9 @@ fn zdt1_problem(x: &[f64]) -> (Vec<f64>, Option<Vec<f64>>) {
     (vec![f1, f2], None)
 }
 
-fn run_zdt1_test(optimiser: &Optimiser) {
-    const N_VARS: usize = 30;
-    let vars = vec![Variable(0.0, 1.0); N_VARS];
-    let mut func = |x: &[f64]| zdt1_problem(x);
-    let max_iter = 250; // Use enough iterations for good convergence
-
-    let result = optimiser.solve(&mut func, &vars, max_iter);
-    assert!(result.is_ok(), "Optimizer returned an error");
+/// Checks the solutions returned by the optimiser for the ZDT1 problem.
+fn check_zdt1_solution(result: Result<OptimiserResult>) {
+    assert!(result.is_ok(), "Optimiser returned an error");
     let solutions = &result.unwrap().solutions;
 
     assert!(
@@ -51,7 +47,7 @@ fn run_zdt1_test(optimiser: &Optimiser) {
     for sol in solutions {
         assert_eq!(
             sol.x.len(),
-            N_VARS,
+            30,
             "Solution has incorrect number of variables."
         );
         assert_eq!(
@@ -61,7 +57,7 @@ fn run_zdt1_test(optimiser: &Optimiser) {
         );
 
         let sum_of_others: f64 = sol.x.iter().skip(1).sum();
-        let g_val = 1.0 + 9.0 * sum_of_others / (N_VARS as f64 - 1.0);
+        let g_val = 1.0 + 9.0 * sum_of_others / (30 as f64 - 1.0);
 
         assert!(
             (g_val - 1.0).abs() < 0.1,
@@ -87,11 +83,15 @@ fn run_zdt1_test(optimiser: &Optimiser) {
 
 #[test]
 fn test_nsga_on_zdt1() {
+    let vars = vec![Variable(0.0, 1.0); 30];
+    let max_iter = 250;
+
     let optimiser = Optimiser::Nsga {
-        pop_size: 100, // Must be even
-        crossover_params: SbxParams::default(),
-        mutation_params: PolyMutationParams::default(),
+        pop_size: 100,
+        crossover: SbxParams::new(0.9, 20.0),
+        mutation: PmParams::new(1.0 / vars.len() as f64, 20.0),
         seed: Some(1),
     };
-    run_zdt1_test(&optimiser);
+
+    check_zdt1_solution(optimiser.solve(&mut zdt1_problem, &vars, max_iter));
 }

@@ -1,6 +1,7 @@
 use swarm::{
-    nsga::{PolyMutationParams, SbxParams},
-    Optimiser, Variable,
+    error::Result,
+    nsga::{PmParams, SbxParams},
+    Optimiser, OptimiserResult, Variable,
 };
 
 /// The Binh and Korn multi-objective test function.
@@ -37,14 +38,9 @@ fn binh_and_korn_problem(x: &[f64]) -> (Vec<f64>, Option<Vec<f64>>) {
     (vec![f1, f2], Some(vec![g1, g2]))
 }
 
-/// Contains the core logic for testing NSGA-II on the Binh and Korn problem.
-fn run_binh_and_korn_test(optimiser: &Optimiser) {
-    let vars = vec![Variable(0.0, 5.0), Variable(0.0, 3.0)];
-    let mut func = |x: &[f64]| binh_and_korn_problem(x);
-    let max_iter = 250;
-
-    let result = optimiser.solve(&mut func, &vars, max_iter);
-    assert!(result.is_ok(), "Optimizer returned an error");
+/// Checks the solutions returned by the optimiser for the Binh and Korn problem.
+fn check_binh_and_korn_solution(result: Result<OptimiserResult>) {
+    assert!(result.is_ok(), "Optimiser returned an error");
     let solutions = &result.unwrap().solutions;
 
     assert!(
@@ -72,7 +68,6 @@ fn run_binh_and_korn_test(optimiser: &Optimiser) {
             sol
         );
     }
-
     println!(
         "Binh and Korn test passed: All {} solutions are feasible and lie on the Pareto front.",
         solutions.len()
@@ -80,12 +75,16 @@ fn run_binh_and_korn_test(optimiser: &Optimiser) {
 }
 
 #[test]
-fn test_nsga2_on_binh_and_korn() {
+fn test_nsga_on_binh_and_korn() {
+    let vars = vec![Variable(0.0, 5.0), Variable(0.0, 3.0)];
+    let max_iter = 250;
+
     let optimiser = Optimiser::Nsga {
         pop_size: 100,
-        crossover_params: SbxParams::default(),
-        mutation_params: PolyMutationParams::default(),
-        seed: Some(42),
+        crossover: SbxParams::new(0.9, 20.0),
+        mutation: PmParams::new(1.0 / vars.len() as f64, 20.0),
+        seed: Some(1),
     };
-    run_binh_and_korn_test(&optimiser);
+
+    check_binh_and_korn_solution(optimiser.solve(&mut binh_and_korn_problem, &vars, max_iter));
 }

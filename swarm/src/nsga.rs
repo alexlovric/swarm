@@ -5,7 +5,7 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 use crate::{
     error::{Result, SwarmError},
     initialisation::Initialisation,
-    ConstraintHandler, OptimiserResult, Solution, Variable,
+    OptimiserResult, Solution, Variable,
 };
 
 #[cfg(feature = "parallel")]
@@ -17,6 +17,19 @@ pub struct SbxParams {
     pub prob: f64,
     pub eta: f64,
 }
+impl SbxParams {
+    /// Instantiate Simulated Binary Crossover parameters.
+    ///
+    /// # Arguments
+    /// * `prob` - The probability of applying crossover.
+    /// * `eta` - The distribution index for crossover.
+    ///
+    /// # Returns
+    /// A new `SbxParams` instance.
+    pub fn new(prob: f64, eta: f64) -> Self {
+        Self { prob, eta }
+    }
+}
 impl Default for SbxParams {
     fn default() -> Self {
         Self {
@@ -27,12 +40,25 @@ impl Default for SbxParams {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct PolyMutationParams {
+pub struct PmParams {
     // Polynomial Mutation
     pub prob: f64,
     pub eta: f64,
 }
-impl Default for PolyMutationParams {
+impl PmParams {
+    /// Instantiate Polynomial Mutation parameters.
+    ///
+    /// # Arguments
+    /// * `prob` - The probability of applying mutation.
+    /// * `eta` - The distribution index for mutation.
+    ///
+    /// # Returns
+    /// A new `PmParams` instance.
+    pub fn new(prob: f64, eta: f64) -> Self {
+        Self { prob, eta }
+    }
+}
+impl Default for PmParams {
     fn default() -> Self {
         Self {
             prob: 1.0,
@@ -55,6 +81,13 @@ struct Individual {
 }
 
 impl Individual {
+    /// Instantiate a new individual.
+    ///
+    /// # Arguments
+    /// * `x` - The list of variable values for this individual.
+    ///
+    /// # Returns
+    /// A new `Individual` instance.
     fn new(x: Vec<f64>) -> Self {
         Self {
             x,
@@ -67,13 +100,13 @@ impl Individual {
     }
 
     /// Evaluates the individual using the objective function and calculates its fitness.
-    /// Evaluates the individual (SERIAL VERSION).
-    #[cfg(not(feature = "parallel"))]
-    fn evaluate<F: FnMut(&[f64]) -> (Vec<f64>, Option<Vec<f64>>)>(
-        &mut self,
-        func: &mut F,
-        _constraint_handler: &Option<ConstraintHandler>,
-    ) {
+    ///
+    /// # Arguments
+    /// * `func` - The objective function to evaluate.
+    ///
+    /// # Returns
+    /// A tuple containing the objective values `f` and optional constraint violations `g`.
+    fn evaluate<F: FnMut(&[f64]) -> (Vec<f64>, Option<Vec<f64>>)>(&mut self, func: &mut F) {
         let (f, g) = func(&self.x);
         self.f = f;
         self.g = g;
@@ -85,10 +118,9 @@ impl Individual {
 
     /// Evaluates the individual (PARALLEL VERSION).
     #[cfg(feature = "parallel")]
-    fn evaluate<F: Fn(&[f64]) -> (Vec<f64>, Option<Vec<f64>>) + Sync + Send>(
+    fn evaluate_par<F: Fn(&[f64]) -> (Vec<f64>, Option<Vec<f64>>) + Sync + Send>(
         &mut self,
         func: &F,
-        _constraint_handler: &Option<ConstraintHandler>,
     ) {
         let (f, g) = func(&self.x);
         self.f = f;
@@ -101,17 +133,14 @@ impl Individual {
 }
 
 /// The main NSGA-II function (SERIAL VERSION).
-/// This version is compiled when the "parallel" feature is NOT enabled.
-#[cfg(not(feature = "parallel"))]
 pub fn nsga<F>(
     func: &mut F,
     vars: &[Variable],
     max_iter: usize,
     pop_size: usize,
     crossover_params: &SbxParams,
-    mutation_params: &PolyMutationParams,
+    mutation_params: &PmParams,
     initialisation: Initialisation,
-    constraint_handler: Option<ConstraintHandler>,
     seed: Option<u64>,
 ) -> Result<OptimiserResult>
 where
@@ -135,7 +164,7 @@ where
 
     // Evaluate the initial population
     for ind in &mut population {
-        ind.evaluate(func, &constraint_handler);
+        ind.evaluate(func);
     }
 
     // Assign rank and crowding to the initial population for the first selection
@@ -151,7 +180,7 @@ where
 
         // Evaluate Offspring
         for ind in &mut offspring {
-            ind.evaluate(func, &constraint_handler);
+            ind.evaluate(func);
         }
 
         // Survival of the Fittest
@@ -180,15 +209,14 @@ where
 /// The main NSGA-II function (PARALLEL VERSION).
 /// This version is compiled only when the "parallel" feature is enabled.
 #[cfg(feature = "parallel")]
-pub fn nsga<F>(
+pub fn nsga_par<F>(
     func: &F, // Takes an immutable, thread-safe closure
     vars: &[Variable],
     max_iter: usize,
     pop_size: usize,
     crossover_params: &SbxParams,
-    mutation_params: &PolyMutationParams,
+    mutation_params: &PmParams,
     initialisation: Initialisation,
-    constraint_handler: Option<ConstraintHandler>,
     seed: Option<u64>,
 ) -> Result<OptimiserResult>
 where
@@ -201,20 +229,20 @@ where
     }
     let mut rng = seed.map_or_else(StdRng::from_entropy, StdRng::seed_from_u64);
 
-    // Initialization (Parallel)
+    // Initialisation (Parallel)
     let mut population: Vec<Individual> = initialisation
         .generate_samples(pop_size, vars, &mut rng)
         .into_par_iter() // Parallel iterator
         .map(|x| {
             let mut ind = Individual::new(x);
-            ind.evaluate(func, &constraint_handler);
+            ind.evaluate_par(func);
             ind
         })
         .collect();
 
     survival_selection(&mut population, pop_size);
 
-    // Optimization Loop
+    // Optimisation Loop
     for _ in 0..max_iter {
         let n_parent_pairs = pop_size / 2;
         let parents = selection(&population, n_parent_pairs, &mut rng);
@@ -223,7 +251,7 @@ where
 
         // Evaluate Offspring (Parallel)
         offspring.par_iter_mut().for_each(|ind| {
-            ind.evaluate(func, &constraint_handler);
+            ind.evaluate_par(func);
         });
 
         population.append(&mut offspring);
@@ -531,7 +559,7 @@ fn crossover(
 fn mutate(
     offspring: &mut [Individual],
     vars: &[Variable],
-    params: &PolyMutationParams,
+    params: &PmParams,
     rng: &mut StdRng,
 ) {
     let prob_per_var = params.prob / vars.len() as f64;

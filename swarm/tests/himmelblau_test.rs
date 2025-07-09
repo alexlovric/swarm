@@ -1,7 +1,8 @@
 use swarm::{
-    nsga::{PolyMutationParams, SbxParams},
+    error::Result,
+    nsga::{PmParams, SbxParams},
     pso::PsoParams,
-    Optimiser, Variable,
+    Optimiser, OptimiserResult, Variable,
 };
 
 /// Himmelblau's function, a standard 2D benchmark for optimisation.
@@ -22,17 +23,9 @@ fn himmelblau_problem(x: &[f64]) -> (Vec<f64>, Option<Vec<f64>>) {
     (vec![objective], None)
 }
 
-fn run_himmelblau_test(optimiser: &Optimiser) {
-    let vars = vec![Variable(-5.0, 5.0), Variable(-5.0, 5.0)];
-    let mut func = |x: &[f64]| himmelblau_problem(x);
-    let max_iter = 100;
-
-    let result = optimiser.solve(&mut func, &vars, max_iter);
-    assert!(result.is_ok(), "Optimizer returned an error");
-    let optimiser_result = &result.unwrap().solutions[0];
-
-    let (actual_x, actual_y) = (optimiser_result.x[0], optimiser_result.x[1]);
-    let actual_f = optimiser_result.f[0];
+fn check_himmelblau_solution(result: Result<OptimiserResult>) {
+    assert!(result.is_ok(), "Optimiser returned an error");
+    let result = result.unwrap();
 
     let minima = [
         (3.0, 2.0),
@@ -41,6 +34,11 @@ fn run_himmelblau_test(optimiser: &Optimiser) {
         (3.584428, -1.848126),
     ];
     let tolerance = 1e-3;
+
+    let actual_x = result.solutions[0].x[0];
+    let actual_y = result.solutions[0].x[1];
+    let actual_f = result.solutions[0].f[0];
+
     let is_close = minima
         .iter()
         .any(|(mx, my)| ((actual_x - mx).powi(2) + (actual_y - my).powi(2)).sqrt() < tolerance);
@@ -58,23 +56,45 @@ fn run_himmelblau_test(optimiser: &Optimiser) {
 }
 
 #[test]
-fn test_nsga2_on_himmelblau() {
-    let optimizer = Optimiser::Nsga {
+fn test_nsga_on_himmelblau() {
+    let optimiser = Optimiser::Nsga {
         pop_size: 50,
-        crossover_params: SbxParams::default(),
-        mutation_params: PolyMutationParams::default(),
+        crossover: SbxParams::default(),
+        mutation: PmParams::default(),
         seed: Some(1),
     };
-    run_himmelblau_test(&optimizer);
+
+    let vars = vec![Variable(-5.0, 5.0), Variable(-5.0, 5.0)];
+    let max_iter = 100;
+
+    let result = optimiser.solve(&mut himmelblau_problem, &vars, max_iter);
+    check_himmelblau_solution(result);
+
+    #[cfg(feature = "parallel")]
+    {
+        let result = optimiser.solve_par(&mut himmelblau_problem, &vars, max_iter);
+        check_himmelblau_solution(result);
+    }
 }
 
 #[test]
-fn test_particleswarm_on_himmelblau() {
-    let optimiser = Optimiser::ParticleSwarm {
+fn test_pso_on_himmelblau() {
+    let optimiser = Optimiser::Pso {
         n_particles: 50,
         params: PsoParams::default(),
         constraint_handler: None,
         seed: Some(1),
     };
-    run_himmelblau_test(&optimiser);
+
+    let vars = vec![Variable(-5.0, 5.0), Variable(-5.0, 5.0)];
+    let max_iter = 100;
+
+    let result = optimiser.solve(&mut himmelblau_problem, &vars, max_iter);
+    check_himmelblau_solution(result);
+
+    #[cfg(feature = "parallel")]
+    {
+        let result = optimiser.solve_par(&mut himmelblau_problem, &vars, max_iter);
+        check_himmelblau_solution(result);
+    }
 }

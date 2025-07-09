@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{Result as IoResult, Write};
 use swarm::{
     error::Result,
-    nsga::{PolyMutationParams, SbxParams},
+    nsga::{PmParams, SbxParams},
     Optimiser, Solution, Variable,
 };
 
@@ -23,9 +23,6 @@ use swarm::{
 ///   - `0 <= x <= 5`
 ///   - `0 <= y <= 3`
 fn binh_and_korn_problem(x: &[f64]) -> (Vec<f64>, Option<Vec<f64>>) {
-    if x.len() != 2 {
-        return (vec![f64::MAX, f64::MAX], None);
-    }
     let x1 = x[0];
     let x2 = x[1];
 
@@ -43,11 +40,7 @@ fn binh_and_korn_problem(x: &[f64]) -> (Vec<f64>, Option<Vec<f64>>) {
 /// Writes the solutions from a Pareto front to a CSV file.
 fn write_pareto_to_csv(solutions: &[Solution], filename: &str) -> IoResult<()> {
     let mut file = File::create(filename)?;
-
-    // Write the header
     writeln!(file, "f1,f2,x1,x2")?;
-
-    // Write the data for each solution
     for sol in solutions {
         writeln!(file, "{},{},{},{}", sol.f[0], sol.f[1], sol.x[0], sol.x[1])?;
     }
@@ -58,19 +51,24 @@ fn main() -> Result<()> {
     let vars = vec![Variable(0.0, 5.0), Variable(0.0, 3.0)];
     let max_iter = 250;
 
-    let optimizer = Optimiser::Nsga {
-        pop_size: 50,
-        crossover_params: SbxParams::default(),
-        mutation_params: PolyMutationParams::default(),
-        seed: Some(1),
+    let optimiser = Optimiser::Nsga {
+        pop_size: 100,
+        crossover: SbxParams::new(0.9, 20.0),
+        mutation: PmParams::new(1.0 / vars.len() as f64, 20.0),
+        seed: None,
     };
 
-    let result = optimizer.solve(&mut binh_and_korn_problem, &vars, max_iter)?;
+    // Serial solving
+    let result = optimiser.solve(&mut binh_and_korn_problem, &vars, max_iter)?;
+
+    // Parallel solving (only makes sense if blackbox function is computationally expensive)
+    // let result = optimiser.solve_par(&binh_and_korn_problem, &vars, max_iter)?;
 
     // Write results to CSV for plotting
     match write_pareto_to_csv(&result.solutions, "target/binh_and_korn_pareto.csv") {
         Ok(_) => println!("Successfully wrote Pareto front to binh_and_korn_pareto.csv"),
         Err(e) => eprintln!("Failed to write CSV file: {}", e),
     }
+
     Ok(())
 }

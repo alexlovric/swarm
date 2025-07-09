@@ -29,12 +29,14 @@ keywords = [
     "optimisation",
     "blackbox",
     "particle-swarm",
+    "pso",
     "nsga",
     "nsga2",
+    "NSGA-II",
     "scientific-computing",
 ]
 
 
 [tool.maturin]
-manifest-path = "Cargo.toml"
+module-name = "swarm._swarm"
 profile = "release"

@@ -1,0 +1,4 @@
+pymoo
+numpy
+pytest
+pytest-benchmark

@@ -8,9 +8,14 @@ pub mod pso;
 use crate::{
     error::Result,
     initialisation::Initialisation,
-    nsga::{nsga, PolyMutationParams, SbxParams},
-    pso::{particle_swarm, PsoParams},
+    nsga::{nsga, PmParams, SbxParams},
+    pso::{pso, PsoParams},
 };
+
+#[cfg(feature = "parallel")]
+use crate::nsga::nsga_par;
+#[cfg(feature = "parallel")]
+use crate::pso::pso_par;
 
 /// Represents a variable with floating point bounds.
 ///
@@ -32,14 +37,14 @@ pub enum Optimiser {
         /// This should be an even number, and typically >= 4.
         pop_size: usize,
         /// Parameters for the Simulated Binary Crossover (SBX) operator.
-        crossover_params: SbxParams,
+        crossover: SbxParams,
         /// Parameters for the Polynomial Mutation operator.
-        mutation_params: PolyMutationParams,
+        mutation: PmParams,
         /// An optional seed for the random number generator to ensure reproducible results.
         seed: Option<u64>,
     },
     /// Configures the Particle Swarm Optimisation (PSO) optimiser.
-    ParticleSwarm {
+    Pso {
         /// The number of particles in the swarm.
         n_particles: usize,
         /// Parameters controlling the behaviour of the particles (e.g., inertia, social/cognitive factors).
@@ -65,7 +70,6 @@ impl Optimiser {
     ///
     /// # Returns
     /// A `Result` containing the `OptimiserResult` on success, or an error string on failure.
-    #[cfg(not(feature = "parallel"))]
     pub fn solve<F>(
         &self,
         func: &mut F,
@@ -79,26 +83,25 @@ impl Optimiser {
         let mut result = match &self {
             Optimiser::Nsga {
                 pop_size,
-                crossover_params,
-                mutation_params,
+                crossover,
+                mutation,
                 seed,
             } => nsga(
                 func,
                 vars,
                 max_iter,
                 *pop_size,
-                crossover_params,
-                mutation_params,
+                crossover,
+                mutation,
                 Initialisation::LatinHypercube { centred: true },
-                None,
                 *seed,
             )?,
-            Optimiser::ParticleSwarm {
+            Optimiser::Pso {
                 n_particles,
                 params,
                 constraint_handler,
                 seed,
-            } => particle_swarm(
+            } => pso(
                 func,
                 vars,
                 max_iter,
@@ -120,7 +123,12 @@ impl Optimiser {
     /// It requires a thread-safe closure (`Fn + Sync + Send`).
     /// See `solve` [Serial version] for more details
     #[cfg(feature = "parallel")]
-    pub fn solve<F>(&self, func: &F, vars: &[Variable], max_iter: usize) -> Result<OptimiserResult>
+    pub fn solve_par<F>(
+        &self,
+        func: &F,
+        vars: &[Variable],
+        max_iter: usize,
+    ) -> Result<OptimiserResult>
     where
         F: Fn(&[f64]) -> (Vec<f64>, Option<Vec<f64>>) + Sync + Send,
     {
@@ -128,26 +136,25 @@ impl Optimiser {
         let mut result = match self {
             Optimiser::Nsga {
                 pop_size,
-                crossover_params,
-                mutation_params,
+                crossover,
+                mutation,
                 seed,
-            } => nsga(
+            } => nsga_par(
                 func,
                 vars,
                 max_iter,
                 *pop_size,
-                crossover_params,
-                mutation_params,
+                crossover,
+                mutation,
                 Initialisation::LatinHypercube { centred: true },
-                None,
                 *seed,
             )?,
-            Optimiser::ParticleSwarm {
+            Optimiser::Pso {
                 n_particles,
                 params,
                 constraint_handler,
                 seed,
-            } => pso(
+            } => pso_par(
                 func,
                 vars,
                 max_iter,
@@ -275,16 +282,16 @@ mod tests {
 
     #[test]
     fn test_optimiser_solve_nsga_dispatch() {
-        let optimizer = Optimiser::Nsga {
+        let optimiser = Optimiser::Nsga {
             pop_size: 10,
-            crossover_params: SbxParams::default(),
-            mutation_params: PolyMutationParams::default(),
+            crossover: SbxParams::default(),
+            mutation: PmParams::default(),
             seed: Some(1),
         };
         let vars = vec![Variable(0.0, 10.0)];
         let mut func = |x: &[f64]| quadratic_problem(x);
 
-        let result = optimizer.solve(&mut func, &vars, 10);
+        let result = optimiser.solve(&mut func, &vars, 10);
         assert!(result.is_ok());
         let result = result.unwrap();
         assert_eq!(result.n_iterations, 10);
@@ -293,7 +300,7 @@ mod tests {
 
     #[test]
     fn test_optimiser_solve_pso_dispatch() {
-        let optimizer = Optimiser::ParticleSwarm {
+        let optimiser = Optimiser::Pso {
             n_particles: 10,
             params: PsoParams::default(),
             constraint_handler: None,
@@ -302,15 +309,11 @@ mod tests {
         let vars = vec![Variable(0.0, 10.0)];
         let mut func = |x: &[f64]| quadratic_problem(x);
 
-        let result = optimizer.solve(&mut func, &vars, 10);
+        let result = optimiser.solve(&mut func, &vars, 10);
         assert!(result.is_ok());
         let result = result.unwrap();
         assert_eq!(result.n_iterations, 10);
 
-        #[cfg(not(feature = "parallel"))]
         assert_abs_diff_eq!(result.solutions[0].x[0], 4.991, epsilon = 1e-3);
-
-        #[cfg(feature = "parallel")]
-        assert_abs_diff_eq!(result.solutions[0].x[0], 4.982, epsilon = 1e-3);
     }
 }
