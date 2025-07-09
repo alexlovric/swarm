@@ -109,13 +109,6 @@ jobs:
     name: Publish Python distribution to PyPI
     needs: test_wheels
     runs-on: ubuntu-latest
-    # This environment configuration is needed for trusted publishing
-    environment:
-      name: pypi
-      url: https://pypi.org/p/swarm_py
-    # These permissions are required for trusted publishing
-    permissions:
-      id-token: write
 
     steps:
       - name: 📥 Download all wheel artifacts
@@ -127,6 +120,9 @@ jobs:
 
       - name: 🚀 Publish to PyPI
         uses: PyO3/maturin-action@v1
+        env:
+          # Use the PyPI token secret
+          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         with:
           command: upload
           args: --skip-existing dist/*.whl
