@@ -6,6 +6,7 @@ Black-box optimisation tool written in Rust. Clean API for solving complex singl
 - Flexible Function Support.
 
 ## Getting Started
+### Rust
 To use Swarm in your project, add it as a dependency in your Cargo.toml:
 
 ```toml
@@ -14,6 +15,11 @@ swarm = "0.1.2"  # (replace with current version)
 ```
 
 This by default includes the `parallel` feature. This allows the use of `solve_par` which is very useful for computationally expensive objective functions. To disable it (for more lightweight build, or if parallel not necessary) use `default-features = false`.
+
+### Python
+```bash
+pip install swarm
+```
 
 ## Examples in Rust
 
