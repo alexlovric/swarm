@@ -1,5 +1,5 @@
 import pytest
-import swarm_py as swarm
+import swarm_py as sp
 import numpy as np
 import time
 
@@ -26,10 +26,10 @@ SEED = 1
 @pytest.fixture
 def swarm_optimiser():
     """Provides a configured swarm optimiser instance."""
-    return swarm.Optimiser.nsga(
+    return sp.Optimiser.nsga(
         pop_size=POP_SIZE,
-        crossover=swarm.SbxParams(prob=0.9, eta=20.0),
-        mutation=swarm.PmParams(prob=1.0 / N_VARS, eta=20.0),
+        crossover=sp.SbxParams(prob=0.9, eta=20.0),
+        mutation=sp.PmParams(prob=1.0 / N_VARS, eta=20.0),
         seed=SEED,
     )
 
@@ -37,13 +37,13 @@ def swarm_optimiser():
 # --- Benchmark Tests ---
 def test_swarm_serial(benchmark, swarm_optimiser):
     """Benchmarks the swarm serial solver."""
-    variables = [swarm.Variable(0, 1) for _ in range(N_VARS)]
+    variables = [sp.Variable(0, 1) for _ in range(N_VARS)]
     benchmark(lambda: swarm_optimiser.solve(expensive_blackbox, variables, MAX_ITER))
 
 
 def test_swarm_parallel(benchmark, swarm_optimiser):
     """Benchmarks the swarm parallel solver."""
-    variables = [swarm.Variable(0, 1) for _ in range(N_VARS)]
+    variables = [sp.Variable(0, 1) for _ in range(N_VARS)]
     benchmark(
         lambda: swarm_optimiser.solve_par(expensive_blackbox, variables, MAX_ITER)
     )

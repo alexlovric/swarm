@@ -1,4 +1,4 @@
-import swarm_py as swarm
+import swarm_py as sp
 import time
 
 
@@ -25,13 +25,13 @@ def himmelblau_problem(x):
 if __name__ == "__main__":
     start_time = time.time()
 
-    variables = [swarm.Variable(-5, 5), swarm.Variable(-5, 5)]
+    variables = [sp.Variable(-5, 5), sp.Variable(-5, 5)]
     print(variables)
 
     max_iter = 100
 
-    optimiser = swarm.Optimiser.pso(50)
-    # optimiser = swarm.Optimiser.nsga(50)
+    optimiser = sp.Optimiser.pso(50)
+    # optimiser = sp.Optimiser.nsga(50)
     print(optimiser)
 
     result = optimiser.solve(himmelblau_problem, variables, max_iter)

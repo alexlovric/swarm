@@ -1,4 +1,4 @@
-import swarm_py as swarm
+import swarm_py as sp
 import time
 import matplotlib.pyplot as plt
 
@@ -64,13 +64,13 @@ if __name__ == "__main__":
     start_time = time.time()
 
     # Define variable bounds and optimisation settings
-    variables = [swarm.Variable(0, 5), swarm.Variable(0, 3)]
+    variables = [sp.Variable(0, 5), sp.Variable(0, 3)]
     print(variables)
 
     max_iter = 250
 
     # Configure the NSGA-II optimiser
-    optimiser = swarm.Optimiser.nsga(pop_size=100)
+    optimiser = sp.Optimiser.nsga(pop_size=100)
     print(optimiser)
 
     # Run the optimisation

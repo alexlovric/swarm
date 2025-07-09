@@ -123,7 +123,7 @@ def blackbox(x: list[float]) -> tuple[list[float], list[float] | None]
 Here's the same Binh and Korn example in Python:
 
 ```python
-from swarm import Optimiser, Variable
+import swarm_py as sp
 
 def binh_and_korn_problem(x):
     f1 = 4.0 * x[0]**2 + 4.0 * x[1]**2
@@ -135,11 +135,11 @@ def binh_and_korn_problem(x):
 
 if __name__ == "__main__":
     # Define variable bounds and optimisation settings
-    variables = [swarm.Variable(0, 5), swarm.Variable(0, 3)]
+    variables = [sp.Variable(0, 5), sp.Variable(0, 3)]
 
     # Configure the NSGA-II optimiser
     # Other properties are default unless specified
-    optimiser = swarm.Optimiser.nsga(pop_size=100)
+    optimiser = sp.Optimiser.nsga(pop_size=100)
 
     # Run the optimisation
     result = optimiser.solve(binh_and_korn_problem, variables, 250)

@@ -1,4 +1,4 @@
-import swarm_py as swarm
+import swarm_py as sp
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -123,12 +123,12 @@ if __name__ == "__main__":
     print("--- Running Swarm Optimiser ---")
     swarm_start_time = time.time()
 
-    variables = [swarm.Variable(0, 1) for _ in range(n_vars)]
+    variables = [sp.Variable(0, 1) for _ in range(n_vars)]
 
-    swarm_optimiser = swarm.Optimiser.nsga(
+    swarm_optimiser = sp.Optimiser.nsga(
         pop_size=pop_size,
-        crossover=swarm.SbxParams(crossover_prob, crossover_eta),
-        mutation=swarm.PmParams(mutation_prob, mutation_eta),
+        crossover=sp.SbxParams(crossover_prob, crossover_eta),
+        mutation=sp.PmParams(mutation_prob, mutation_eta),
         seed=None,
     )
 

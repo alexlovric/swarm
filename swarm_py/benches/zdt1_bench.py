@@ -1,4 +1,4 @@
-import swarm_py as swarm
+import swarm_py as sp
 import numpy as np
 
 # --- Pymoo imports ---
@@ -57,12 +57,12 @@ def test_swarm_zdt1(benchmark):
     """
     Benchmarks the swarm library on the ZDT1 problem.
     """
-    variables = [swarm.Variable(0, 1) for _ in range(N_VARS)]
+    variables = [sp.Variable(0, 1) for _ in range(N_VARS)]
 
-    optimiser = swarm.Optimiser.nsga(
+    optimiser = sp.Optimiser.nsga(
         pop_size=POP_SIZE,
-        crossover=swarm.SbxParams(prob=CROSSOVER_PROB, eta=CROSSOVER_ETA),
-        mutation=swarm.PmParams(prob=MUTATION_PROB, eta=MUTATION_ETA),
+        crossover=sp.SbxParams(prob=CROSSOVER_PROB, eta=CROSSOVER_ETA),
+        mutation=sp.PmParams(prob=MUTATION_PROB, eta=MUTATION_ETA),
         seed=SEED,
     )
 
