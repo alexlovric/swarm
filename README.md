@@ -18,7 +18,7 @@ This by default includes the `parallel` feature. This allows the use of `solve_p
 
 ### Python
 ```bash
-pip install swarm
+pip install swarm_py
 ```
 
 ## Examples in Rust
