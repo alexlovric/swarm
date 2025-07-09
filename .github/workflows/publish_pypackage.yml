@@ -1,4 +1,4 @@
-name: Build, Test, and Publish swarm to PyPI
+name: Publish swarm to PyPI
 
 on:
   workflow_dispatch:
