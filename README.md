@@ -110,7 +110,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 After running the Binh and Korn example and plotting the solutions, you should see a Pareto front similar to the one shown below.
 
-<img src="assets/binh_korn_pareto.png" width="99%"/>
+<img src="https://github.com/alexlovric/swarm/blob/main/assets/binh_korn_pareto.png?raw=true" />
 
 ## Examples in Python
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 ### Serial Execution
 Comparing to the same configuration Pymoo NSGA-II optimiser for the ZDT1 problem:
 
-<img src="assets/zdt1_comp.png" width="99%"/>
+<img src="https://github.com/alexlovric/swarm/blob/main/assets/zdt1_comp.png?raw=true" width="99%"/>
 
 ### Parallel Execution
 For expensive blackbox functions it makes sense to run swarm in parallel. If we simulate an expensive blackbox function by adding a sleep delay to the ZDT1 problem, i.e.,
@@ -173,7 +173,7 @@ def expensive_blackbox(x):
 
 then running swarm with NSGA-II in parallel is a massive improvement:
 
-<img src="assets/parallel_serial_perf.png" width="99%"/>
+<img src="https://github.com/alexlovric/swarm/blob/main/assets/parallel_serial_perf.png?raw=true" width="99%"/>
 
 ## Build python from source
 These instructions assume that Python3 and Cargo are installed on your system. To set up this project, follow these steps:
