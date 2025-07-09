@@ -55,20 +55,15 @@ jobs:
       fail-fast: false
       matrix:
         # Test on all the same combinations we built for
-        # Use the specific patch version confirmed to be available on runners
         include:
           - os: ubuntu-latest
             target: x86_64
-            python-version: "3.10.11"
           - os: windows-latest
             target: x86_64
-            python-version: "3.10.11"
           - os: macos-latest
             target: x86_64
-            python-version: "3.10.11"
           - os: macos-latest
             target: aarch64
-            python-version: "3.10.11"
 
     steps:
       - name: 📥 Checkout code
@@ -77,9 +72,7 @@ jobs:
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-          # Explicitly set the architecture to match the runner
-          architecture: ${{ matrix.target }}
+          python-version: "3.10"
 
       - name: 📥 Download wheels
         uses: actions/download-artifact@v4
