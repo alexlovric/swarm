@@ -109,8 +109,6 @@ jobs:
     name: Publish Python distribution to PyPI
     needs: test_wheels
     runs-on: ubuntu-latest
-    # This step only runs when a tag is pushed
-    if: startsWith(github.ref, 'refs/tags/')
     # This environment configuration is needed for trusted publishing
     environment:
       name: pypi
