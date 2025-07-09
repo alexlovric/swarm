@@ -1,4 +1,4 @@
-name: Publish swarm_py to PyPI
+name: Build, Test, and Publish swarm_py to PyPI
 
 on:
   # Allows you to run this workflow manually from the Actions tab
@@ -51,6 +51,8 @@ jobs:
     needs: build_wheels
     runs-on: ${{ matrix.os }}
     strategy:
+      # We want to see all test results, so we disable fail-fast
+      fail-fast: false
       matrix:
         # Test on all the same combinations we built for
         include:
@@ -75,6 +77,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          # Explicitly set the architecture to match the runner
+          architecture: ${{ matrix.target }}
 
       - name: 📥 Download wheels
         uses: actions/download-artifact@v4
@@ -89,15 +93,22 @@ jobs:
           echo "--- Verifying package metadata (twine check) ---"
           twine check dist/*
 
-      - name: 📦 Install wheel and test import
+      - name: 📦 Install and Test (Unix)
+        if: runner.os != 'Windows'
         shell: bash
         run: |
-          # Create a virtual environment
           python -m venv venv
           source venv/bin/activate
-          # Install the built wheel using the new package name
           pip install --find-links=dist/ swarm_py
-          # Run the basic import test from its new location
+          python swarm_py/tests/test_import.py
+
+      - name: 📦 Install and Test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python -m venv venv
+          ./venv/Scripts/Activate.ps1
+          pip install --find-links=dist/ swarm_py
           python swarm_py/tests/test_import.py
 
   publish_to_pypi:
