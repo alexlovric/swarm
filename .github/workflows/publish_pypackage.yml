@@ -1,0 +1,127 @@
+name: Build, Test, and Publish swarm to PyPI
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  build_wheels:
+    name: Build wheels for ${{ matrix.os }} (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Define OS and target architecture combinations
+        include:
+          - os: ubuntu-latest
+            target: x86_64
+          - os: windows-latest
+            target: x86_64
+          - os: macos-latest
+            target: x86_64
+          - os: macos-latest
+            target: aarch64
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          working-directory: swarm_py
+          # Pass the target architecture to maturin
+          target: ${{ matrix.target }}
+          args: --release --out dist
+          # Build manylinux wheels on Linux for broad compatibility
+          manylinux: auto
+
+      - name: ⬆️ Upload wheels as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-wheels-${{ matrix.os }}-${{ matrix.target }}
+          path: swarm_py/dist
+
+  test_wheels:
+    name: Test wheels on ${{ matrix.os }} (${{ matrix.target }})
+    needs: build_wheels
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Test on all the same combinations we built for
+        include:
+          - os: ubuntu-latest
+            target: x86_64
+            python-version: "3.10"
+          - os: windows-latest
+            target: x86_64
+            python-version: "3.10"
+          - os: macos-latest
+            target: x86_64
+            python-version: "3.10"
+          - os: macos-latest
+            target: aarch64
+            python-version: "3.10"
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 📥 Download wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: python-wheels-${{ matrix.os }}-${{ matrix.target }}
+          path: dist
+
+      - name: 🔎 Verify package metadata
+        shell: bash
+        run: |
+          pip install twine
+          echo "--- Verifying package metadata (twine check) ---"
+          twine check dist/*
+
+      - name: 📦 Install wheel and test import
+        shell: bash
+        run: |
+          # Create a virtual environment
+          python -m venv venv
+          source venv/bin/activate
+          # Install the built wheel
+          pip install --find-links=dist/ swarm
+          # Run the basic import test from its new location
+          python swarm_py/tests/test_import.py
+
+  publish_to_pypi:
+    name: Publish Python distribution to PyPI
+    needs: test_wheels
+    runs-on: ubuntu-latest
+    # This step only runs when a tag is pushed
+    if: startsWith(github.ref, 'refs/tags/')
+    # This environment configuration is needed for trusted publishing
+    environment:
+      name: pypi
+      url: https://pypi.org/p/swarm
+    # These permissions are required for trusted publishing
+    permissions:
+      id-token: write
+
+    steps:
+      - name: 📥 Download all wheel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: python-wheels-*
+          path: dist
+          merge-multiple: true
+
+      - name: 🚀 Publish to PyPI
+        uses: PyO3/maturin-action@v1
+        with:
+          command: upload
+          args: --skip-existing dist/*.whl

@@ -133,6 +133,19 @@ impl Individual {
 }
 
 /// The main NSGA-II function (SERIAL VERSION).
+/// 
+/// # Arguments
+/// * `func` - The objective function to evaluate.
+/// * `vars` - The list of variable bounds for this problem.
+/// * `max_iter` - The maximum number of iterations to run.
+/// * `pop_size` - The population size.
+/// * `crossover_params` - The crossover parameters.
+/// * `mutation_params` - The mutation parameters.
+/// * `initialisation` - The initialisation method.
+/// * `seed` - The random seed.
+/// 
+/// # Returns
+/// A `Result` containing the optimiser result `OptimiserResult`.
 pub fn nsga<F>(
     func: &mut F,
     vars: &[Variable],
